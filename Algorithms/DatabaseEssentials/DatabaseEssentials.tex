@@ -4,117 +4,74 @@
 
 \section*{Introduction to MySQL}
 
-Databases are an essential part of computation.  We will learn how to use MySQL databases in this section.  MySQL is open-source software that is easy to use and free.  It also works well with Python.  All of this makes it a good choice for our applications.  Other options exist, but most of what we learn here will translate easily to other platforms.
+Databases are an essential part of computation.  We will learn how to use SQL databases in this section.  SQL is a programming language specification for manipulating relational databases. There are many implementations of SQL, and although they all follow more or less the same syntax, each has it's own keywords.
 
-We do not explain installation and setup of MySQL here.  See an appendix (TODO:  Make an appendix with a tutorial).
+We will be using the SQLite (version 3) implementation. SQLite is special in that it does not require a background server and is contained in just the commandline client. It may not have all the commands of a full SQL server, but it is still useful in small applications. It is also advantegous to us because now we don't have to set up a server.
 
-MySQL works by running a server that keeps track of databases and listens for queries.  There are several ways to interact with the server.  In this section, we will be using the MySQL terminal launched from the command line.  Let's begin by starting the server.  In your command prompt, navigate to the location of your MySQL installation. Now, type
-
-\begin{lstlisting}[style=ShellInput]
-/bin/mysqld
-\end{lstlisting}
-
-Now that we are sure that the server is on, let's start the MySQL terminal so that we can talk to it.  From the command prompt, type
+Start up SQLite with the following to create a new database called \li{testdb.db} in the current directory.
 
 \begin{lstlisting}[style=ShellInput]
-mysql -u root -p
+sqlite3 testdb.db
 \end{lstlisting}
 
 You should get a new prompt that looks like this
 
 \begin{lstlisting}
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 1
-Server version: 5.5.18 MySQL Community Server (GPL)
+SQLite version 3.7.17 2013-05-20 00:56:22
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"
+sqlite> 
 
-Copyright (c) 2000, 2011, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> 
 \end{lstlisting}
-
-You are now ready to start querying the server.
 
 \section*{Basic Commands in MySQL}
 
 \subsection{Creating Databases and Tables}
 
-MySQL can store muliple databases, and each database will have several tables.  To see the databases in MySQL, we use the {\tt SHOW DATABASES;} command.
+SQLlite can store muliple databases, and each database will have several tables.  To see the databases in SQLlite, we use the {\tt .databases;} command.
 
 \begin{lstlisting}
 
-mysql> SHOW DATABASES;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-+--------------------+
-3 rows in set (0.03 sec)
+sqlite> .databases
+seq  name             file                                                      
+---  ---------------  -------------------
+0    main             /home/sqlite/testdb
 
 \end{lstlisting}
 
-Note that the command ends with a semicolon. Every command we will see will also end with the same character.  Your terminal may show additional databases to these.  Each of these three databases store information about your installation of MySQL and the databases that are stored on the server.  They have their uses, but for now we will ignore them.
+All commands that start with a "\li{.}" are commands specific to SQLite. A few other useful commands are \li{.help} (to pull up a list of common commands), \li{.quit} (to quit the client), and \li{.dump} ( to dump the current database into a text file). If you start up the client without specifing a database, you can latter save it to file using \li{.save}.
 
-Now we will go over some basic queries that you can execute from the command line.  We want to be able to get data from MySQL server, but we don't have a database to get it from yet.  We can use the {\tt CREATE} command to create a new database.  In this example, we will create a student database with three tables.
+Now, quit the current client and start up a new one with a new database called \li{students.db}.
+
+\begin{lstlisting}[style=ShellInput]
+sqlite3 students.db
+\end{lstlisting}
+
+Now we add some tables to the students database. Use the {\tt CREATE} command to create a table and specify the column names of the table.
 
 \begin{lstlisting}
-mysql>CREATE DATABASE students;
-Query OK, 1 row affected (0.00 sec)
 
-mysql> show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| students           |
-+--------------------+
-4 rows in set (0.00 sec)
+sqlite> CREATE TABLE student_information (StudentID INT NOT NULL, Name VARCHAR(20), SocSecurity INT, MajorCode INT);
 
 \end{lstlisting}
 
-Now we add some tables to the students database.  First, we need to tell MySQL which database we want to work on with the {\tt USE} command.
+Note that this command ends with a semicolon ";". All SQL commands are terminated by a semicolon.
+
+This creates a student information table with coloumns for each individuals student id, social security number, major, and name.  The arguments in parentheses are the column names followed by the datatype that entries in that column will take.  The {\tt INT} datatype allows up to 32-bit integers and {\tt VARCHAR(20)} allows strings of variable length up to 20 characters.  There are dozens of options to choose from.  The online SQLite documentation is a good resource to explore them and to see which are available in SQLite.
+
+Now we add another table that matches students to classes that they have taken and their grades.
 
 \begin{lstlisting}
 
-mysql> USE students;
-Database changed
-
-\end{lstlisting}
-
-Now we use the {\tt CREATE} command to create a table and specify the column names of the table.
-
-\begin{lstlisting}
-
-mysql> CREATE TABLE student_information (StudentID INT NOT NULL, Name VARCHAR(20), SocSecurity INT, MajorCode INT);
-Query OK, 0 rows affected (0.68 sec)
-
-\end{lstlisting}
-
-This creates a student information table with coloumns for each individuals student id, social security number, major, and name.  The arguments in parentheses are the column names followed by the datatype that entries in that column will take.  The {\tt INT} datatype allows up to 32-bit integers and {\tt VARCHAR(20)} allows strings of variable length up to 20 characters.  There are dozens of options to choose from.  The online MySQL documentation is a good resource to explore them.
-
-Now we add another table that matches students to courses that they have taken and their grades.
-
-\begin{lstlisting}
-
-mysql> CREATE TABLE student_classes (StudentID INT NOT NULL, CourseID INT, Grade VARCHAR(2));
-Query OK, 0 rows affected (0.26 sec)
+sqlite> CREATE TABLE student_classes (StudentID INT NOT NULL, ClassID INT, Grade VARCHAR(2));
 
 \end{lstlisting}
 
 \begin{problem}
 
-In this problem you will create two new tables using the {\tt CREATE TABLE} syntax.  The first table will be called MajorInfo and have a columns called MajorCode and MajorName.  MajorCode should have the INT datatype and MajorName should be VARCHAR(20).
+In this problem you will create two new tables using the {\tt CREATE TABLE} syntax.  The first table will be called major_information and have two columns called MajorID and MajorName.  MajorID should have the INT datatype and MajorName should be VARCHAR(20).
 
-The second table will be called CourseInfo and have columns called CourseID and CourseName, also INT and VARCHAR(20) respectively.
+The second table will be called class_information and have columns called ClassID and ClassName, also INT and VARCHAR(20) respectively.
 
 \end{problem}
 
@@ -123,149 +80,120 @@ The second table will be called CourseInfo and have columns called CourseID and 
 In this section we will insert data into the tables that we have created.  First we will show how to manually add data using the {\tt INSERT} command.  {\tt INSERT} requires that we specify which table that we wish to modify and the values for each column.  For example
 
 \begin{lstlisting}
-mysql> INSERT INTO student_information VALUES(55, "John Smith", 372897382, 2);
-Query OK, 1 row affected (0.20 sec)
+sqlite> INSERT INTO student_information VALUES(55, "John Smith", 372897382, 2);
 \end{lstlisting}
 
 We may also remove the line we just inserted using the {\tt DELETE} command.
 
 \begin{lstlisting}
 
-mysql> DELETE FROM student_information WHERE StudentID=55;
-Query OK, 1 row affected (0.16 sec)
+sqlite> DELETE FROM student_information WHERE StudentID=55;
 
 \end{lstlisting}
 
-These commands are useful for table maintenance or where it may be automated, but MySQL is a very powerful tool for dealing with large amounts of data.  Manually inserting and deleting in such a table is ornerous in even simple cases and essentially impossible for a moderately sized table.  If we have some data in a file on our computer, we may use the {\tt LOAD} command to automatically move it into our database.
+These commands are useful for table maintenance or where it may be automated, but MySQL is a very powerful tool for dealing with large amounts of data.  Manually inserting and deleting in such a table is ornerous in even simple cases and essentially impossible for a moderately sized table.  If we have some data in a file on our computer, we may use the \li{.import} command to automatically move it into our database.
 
 \begin{lstlisting}
 
-mysql> LOAD DATA LOCAL INFILE "./students.dat" INTO TABLE student_information FIELDS TERMINATED BY ",";
-Query OK, 10 rows affected (0.07 sec)
+sqlite> .mode csv
+sqlite> .import students.dat student_information
 
 \end{lstlisting}
 
-{\tt LOCAL INFILE} specifies that we are a loading file from a location on our local machine.  We then specify the path to the file and which table to load the data into.  Finally, we specify what character separates the columns.  Even for large files this operation moves very fast.
+The \li{.mode} command specifies the file structure. \li{csv} specifies that it's a comma delimited file.
 
 \begin{problem}
 
-Download students.dat, class\_info.dat, classes.dat, and major\_info.dat and use the {\tt LOAD} command to insert the data in each into student\_information, ClassInfo, student\_classes and MajorInfo respectively.
+Download students.dat, class\_info.dat, classes.dat, and major\_info.dat and use the {\tt .import} command to insert the data in each into student\_information, class_information, student\_classes and major_information respectively.
 
 \end{problem}
 
+\begin{comment}
+Unfortunatly sqlite can only time SQL queries
+.import isn't one
 \begin{problem}
 
 Using python, write a program that will accepts a number of rows and returns a 10 column matrix with the specified number of rows and write it to a file with each column separated by commas.  The first column should be in ascending numeric order, but the others should have random numbers in them.  Generate matrices with 100, 1000, 10000, and 100000 rows.  Load each into a different table in a new database and time the load operation.  How does the time increase?
 
 \end{problem}
+\end{comment}
 
 \section{Querying and Joining Tables}
 
 Now that we have loaded data in the form of our student database we will learn to query and join the tables.  The first command that we will use is {\tt SELECT}, which returns specified rows of a table.  For example
 
 \begin{lstlisting}
-mysql> SELECT Name FROM student_information;
-+---------------------+
-| Name                |
-+---------------------+
-|  Jared Webb         |
-|  Alexander Zaitzeff |
-|  Rachel Suggs       |
-|  Jeff Humphreys     |
-|  Abe Frandsen       |
-|  Tyler Jarvis       |
-|  Jessica Purcell    |
-|  Janice Joplin      |
-|  John Lennon        |
-|  Tupac Shakur       |
-+---------------------+
-10 rows in set (0.00 sec)
+sqlite> SELECT Name FROM student_information;
+" Donald Chamberlin"
+" Raymond Boyce"
+" D.Richard Hipp"
+" Jeff Humphreys"
+" Travis Oliphant"
+" Tyler Jarvis"
+" Randall Munroe"
+" Janice Joplin"
+" John Lennon"
+" Tupac Shakur"
 \end{lstlisting}
 
-After {\tt SELECT} we specify a column and a table to query, and MySQL returns the requested rows.  We may also add conditions to our command to get more refined results.
+After {\tt SELECT} we specify a column and a table to query, and SQLite returns the requested rows.  We may also add conditions to our command to get more refined results.
 
 \begin{lstlisting}
-
-mysql> SELECT Name FROM student_information WHERE StudentID = 4;
-+-----------------+
-| Name            |
-+-----------------+
-|  Jeff Humphreys |
-+-----------------+
-1 row in set (0.00 sec)
-
+sqlite> SELECT Name FROM student_information WHERE StudentID = 4;
+" Jeff Humphreys"
 \end{lstlisting}
 
 Or we may select more than one column
 
 \begin{lstlisting}
 
-mysql> SELECT Name, SocSecurity FROM student_information WHERE StudentID = 4;
-+-----------------+-------------+
-| Name            | SocSecurity |
-+-----------------+-------------+
-|  Jeff Humphreys |   736452198 |
-+-----------------+-------------+
-1 row in set (0.00 sec)
+sqlite> SELECT Name, SocSecurity FROM student_information WHERE StudentID = 4;
+" Jeff Humphreys",736452198
 
-mysql> SELECT * FROM student_information WHERE StudentID = 4;
-+-----------+-----------------+-------------+-----------+
-| StudentID | Name            | SocSecurity | MajorCode |
-+-----------+-----------------+-------------+-----------+
-|         4 |  Jeff Humphreys |   736452198 |         3 |
-+-----------+-----------------+-------------+-----------+
-1 row in set (0.00 sec)
+sqlite> SELECT * FROM student_information WHERE StudentID = 4;
+4," Jeff Humphreys",736452198,3
 
-mysql> SELECT * FROM student_information;
-+-----------+---------------------+-------------+-----------+
-| StudentID | Name                | SocSecurity | MajorCode |
-+-----------+---------------------+-------------+-----------+
-|         1 |  Jared Webb         |   123456789 |         1 |
-|         2 |  Alexander Zaitzeff |   987654321 |         1 |
-|         3 |  Rachel Suggs       |   431256789 |         2 |
-|         4 |  Jeff Humphreys     |   736452198 |         3 |
-|         5 |  Abe Frandsen       |   172645382 |         4 |
-|         6 |  Tyler Jarvis       |   174382645 |         3 |
-|         7 |  Jessica Purcell    |   827635142 |         2 |
-|         8 |  Janice Joplic      |   987263512 |         1 |
-|         9 |  John Lennon        |   192837641 |         3 |
-|        10 |  Tupac Shakur       |   192837412 |         2 |
-+-----------+---------------------+-------------+-----------+
-10 rows in set (0.00 sec)
+sqlite> SELECT * FROM student_information;
+1," Donald Chamberlin",123456789,1
+2," Raymond Boyce",987654321,1
+3," D.Richard Hipp",431256789,2
+4," Jeff Humphreys",736452198,3
+5," Travis Oliphant",172645382,4
+6," Tyler Jarvis",174382645,3
+7," Randall Munroe",827635142,2
+8," Janice Joplin",987263512,1
+9," John Lennon",192837641,3
+10," Tupac Shakur",192837412,2
 
 \end{lstlisting}
 
-We may join tables by columns using the {\tt INNER JOIN} command.  This is a very powerful tool for uniting data across many tables.  In MySQL we can use {\tt INNER JOIN} in conjunction with {\tt SELECT} to query data across many tables into place.  For example we can inner join student\_classes and student\_information on the StudentID column to display student information and grades in one table.
+We may join tables by columns using the {\tt INNER JOIN} command.  This is a very powerful tool for uniting data across many tables.  In SQLite we can use {\tt INNER JOIN} in conjunction with {\tt SELECT} to query data across many tables into place.  For example we can inner join student\_classes and student\_information on the StudentID column to display student information and grades in one table.
 
 \begin{lstlisting}
 
-mysql> SELECT * FROM student_information INNER JOIN student_classes ON student_information.StudentID = student_classes.StudentID;
-+-----------+---------------------+-------------+-----------+-----------+---------+-------+
-| StudentID | Name                | SocSecurity | MajorCode | StudentID | ClassID | Grade |
-+-----------+---------------------+-------------+-----------+-----------+---------+-------+
-|         1 |  Jared Webb         |   123456789 |         1 |         1 |       4 |  C    |
-|         1 |  Jared Webb         |   123456789 |         1 |         1 |       3 |  B    |
-|         2 |  Alexander Zaitzeff |   987654321 |         1 |         2 |       4 |  A    |
-|         2 |  Alexander Zaitzeff |   987654321 |         1 |         2 |       3 |  A    |
-|         3 |  Rachel Suggs       |   431256789 |         2 |         3 |       2 |  C    |
-|         2 |  Alexander Zaitzeff |   987654321 |         1 |         2 |       1 |  B    |
-|         4 |  Jeff Humphreys     |   736452198 |         3 |         4 |       1 |  A    |
-|         5 |  Abe Frandsen       |   172645382 |         4 |         5 |       2 |  C    |
-|         5 |  Abe Frandsen       |   172645382 |         4 |         5 |       3 |  C    |
-|         6 |  Tyler Jarvis       |   174382645 |         3 |         6 |       4 |  D    |
-|         6 |  Tyler Jarvis       |   174382645 |         3 |         6 |       2 |  A    |
-|         6 |  Tyler Jarvis       |   174382645 |         3 |         6 |       1 |  B    |
-|         7 |  Jessica Purcell    |   827635142 |         2 |         7 |       2 |  A    |
-|         7 |  Jessica Purcell    |   827635142 |         2 |         7 |       1 |  C    |
-|         8 |  Janice Joplic      |   987263512 |         1 |         8 |       2 |  D    |
-|         8 |  Janice Joplic      |   987263512 |         1 |         8 |       1 |  A    |
-|         5 |  Abe Frandsen       |   172645382 |         4 |         5 |       4 |  A    |
-|         9 |  John Lennon        |   192837641 |         3 |         9 |       2 |  B    |
-|         9 |  John Lennon        |   192837641 |         3 |         9 |       3 |  C    |
-|        10 |  Tupac Shakur       |   192837412 |         2 |        10 |       1 |  A    |
-|        10 |  Tupac Shakur       |   192837412 |         2 |        10 |       2 |  A    |
-+-----------+---------------------+-------------+-----------+-----------+---------+-------+
-21 rows in set (0.05 sec)
+sqlite> SELECT * FROM student_information INNER JOIN student_classes ON student_information.StudentID = student_classes.StudentID;
+1," Donald Chamberlin",123456789,1,1,3," B-"
+1," Donald Chamberlin",123456789,1,1,4," C"
+2," Raymond Boyce",987654321,1,2,1," B"
+2," Raymond Boyce",987654321,1,2,3," A+"
+2," Raymond Boyce",987654321,1,2,4," A+"
+3," D.Richard Hipp",431256789,2,3,2," C"
+4," Jeff Humphreys",736452198,3,4,1," A"
+5," Travis Oliphant",172645382,4,5,2," C"
+5," Travis Oliphant",172645382,4,5,3," C-"
+5," Travis Oliphant",172645382,4,5,4," A"
+6," Tyler Jarvis",174382645,3,6,1," B"
+6," Tyler Jarvis",174382645,3,6,2," A+"
+6," Tyler Jarvis",174382645,3,6,4," D"
+7," Randall Munroe",827635142,2,7,1," C+"
+7," Randall Munroe",827635142,2,7,2," A"
+8," Janice Joplin",987263512,1,8,1," A-"
+8," Janice Joplin",987263512,1,8,2," D-"
+9," John Lennon",192837641,3,9,2," B"
+9," John Lennon",192837641,3,9,3," C"
+10," Tupac Shakur",192837412,2,10,1," A"
+10," Tupac Shakur",192837412,2,10,2," A-"
+
 
 \end{lstlisting}
 
@@ -273,15 +201,10 @@ By specify columns, we can display the grades of one student.
 
 \begin{lstlisting}
 
-mysql> SELECT Name, Grade FROM student_information INNER JOIN student_classes ON student_information.StudentID = student_classes.StudentID WHERE student_information.StudentID=6;
-+---------------+-------+
-| Name          | Grade |
-+---------------+-------+
-|  Tyler Jarvis |  D    |
-|  Tyler Jarvis |  A    |
-|  Tyler Jarvis |  B    |
-+---------------+-------+
-3 rows in set (0.05 sec)
+sqlite> SELECT Name, Grade FROM student_information INNER JOIN student_classes ON student_information.StudentID = student_classes.StudentID WHERE student_information.StudentID=6;
+" Tyler Jarvis"," A+"
+" Tyler Jarvis"," B"
+" Tyler Jarvis"," D"
 
 \end{lstlisting}
 
